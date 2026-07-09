@@ -6,7 +6,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
-use App\Services\Pricing;
+use PortalConnect\Subscriptions\Pricing;
 use PortalConnect\Wallet\Exceptions\InsufficientFundsException;
 use PortalConnect\Wallet\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -36,7 +36,8 @@ class TopupCommand extends Command
             return self::FAILURE;
         }
 
-        $walletRow = Wallet::firstOrCreate(
+        $walletModel = config('wallet.model', Wallet::class);
+        $walletRow = $walletModel::firstOrCreate(
             ['user_id' => $user->id],
             ['balance_kopecks' => 0, 'currency' => 'RUB']
         );

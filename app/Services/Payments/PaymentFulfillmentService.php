@@ -7,7 +7,7 @@ use App\Models\Subscription;
 use App\Models\WalletTransaction;
 use PortalConnect\Payments\DTO\WebhookResult;
 use PortalConnect\Payments\Exceptions\WebhookRejectedException;
-use App\Services\Subscriptions\SubscriptionManager;
+use PortalConnect\Subscriptions\SubscriptionManager;
 use PortalConnect\Wallet\Exceptions\InsufficientFundsException;
 use PortalConnect\Wallet\WalletService;
 use Illuminate\Support\Facades\DB;

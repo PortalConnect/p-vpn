@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Pricing;
-use App\Services\Subscriptions\SubscriptionManager;
+use PortalConnect\Subscriptions\Pricing;
+use PortalConnect\Subscriptions\SubscriptionManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -26,6 +26,6 @@ class SubscriptionController extends Controller
             return redirect('/dashboard')->with('success', 'Подписка активирована.');
         }
 
-        return redirect()->away($outcome->payment->pay_url);
+        return redirect()->away($outcome->bill->payUrl);
     }
 }

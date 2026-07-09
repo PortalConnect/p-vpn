@@ -11,7 +11,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\VpnKey;
 use App\Models\WalletTransaction;
-use App\Services\Pricing;
+use PortalConnect\Subscriptions\Pricing;
 use PortalConnect\Wallet\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

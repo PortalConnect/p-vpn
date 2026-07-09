@@ -3,42 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use PortalConnect\Subscriptions\Models\Subscription as BaseSubscription;
 
-class Subscription extends Model
+class Subscription extends BaseSubscription
 {
     /** @use HasFactory<\Database\Factories\SubscriptionFactory> */
     use HasFactory;
-
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_ACTIVE = 'active';
-    public const STATUS_EXPIRED = 'expired';
-    public const STATUS_CANCELLED = 'cancelled';
-
-    protected $fillable = [
-        'user_id',
-        'status',
-        'months',
-        'price_kopecks',
-        'starts_at',
-        'ends_at',
-        'paid_via_transaction_id',
-        'auto_renewed_from_id',
-    ];
-
-    protected $casts = [
-        'months' => 'integer',
-        'price_kopecks' => 'integer',
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
-    ];
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function paidViaTransaction(): BelongsTo
     {

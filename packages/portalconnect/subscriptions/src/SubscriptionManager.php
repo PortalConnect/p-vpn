@@ -1,38 +1,35 @@
 <?php
 
-namespace App\Services\Subscriptions;
+namespace PortalConnect\Subscriptions;
 
-use App\Jobs\RestoreVpnKeyJob;
-use App\Models\Subscription;
-use App\Models\User;
-use App\Models\VpnKey;
-use App\Models\WalletTransaction;
-use App\Services\Payments\PaymentService;
-use App\Services\Pricing;
-use App\Services\Subscriptions\DTO\PurchaseOutcome;
-use PortalConnect\Wallet\WalletService;
 use Illuminate\Support\Facades\DB;
+use PortalConnect\Subscriptions\Contracts\PaymentInitiator;
+use PortalConnect\Subscriptions\DTO\PurchaseOutcome;
+use PortalConnect\Subscriptions\Events\SubscriptionActivated;
+use PortalConnect\Subscriptions\Models\Subscription;
+use PortalConnect\Wallet\Models\WalletTransaction;
+use PortalConnect\Wallet\WalletService;
 
+/**
+ * Жизненный цикл подписки: покупка, активация (списание с кошелька),
+ * автопродление. Побочные эффекты приложения — через событие SubscriptionActivated.
+ */
 class SubscriptionManager
 {
     public function __construct(
         private WalletService $wallet,
-        private PaymentService $payments,
+        private PaymentInitiator $payments,
     ) {
     }
 
-    /**
-     * Покупка подписки: хватает баланса — активируем сразу; не хватает —
-     * создаём pending-подписку и счёт у платёжного провайдера.
-     */
     /** Хватает ли на балансе на подписку на N месяцев. */
-    public function sufficientFor(User $user, int $months): bool
+    public function sufficientFor(object $user, int $months): bool
     {
         return $this->shortfall($user, $months) === 0;
     }
 
     /** Сколько не хватает до цены подписки (0 — хватает). */
-    public function shortfall(User $user, int $months): int
+    public function shortfall(object $user, int $months): int
     {
         $price = Pricing::priceFor($months);
         $balance = $user->wallet?->balance_kopecks ?? 0;
@@ -40,11 +37,15 @@ class SubscriptionManager
         return max(0, $price - $balance);
     }
 
-    public function purchase(User $user, int $months): PurchaseOutcome
+    /**
+     * Покупка: хватает баланса — активируем сразу; нет — pending-подписка + счёт.
+     */
+    public function purchase(object $user, int $months): PurchaseOutcome
     {
         $price = Pricing::priceFor($months);
 
-        $subscription = DB::transaction(fn () => Subscription::create([
+        $model = config('subscriptions.model', Subscription::class);
+        $subscription = DB::transaction(fn () => $model::create([
             'user_id' => $user->id,
             'status' => Subscription::STATUS_PENDING,
             'months' => $months,
@@ -61,9 +62,9 @@ class SubscriptionManager
             (int) config('wallet.min_topup_rubles') * 100
         );
 
-        $payment = $this->payments->subscriptionPurchase($user, $subscription, $topupAmount);
+        $bill = $this->payments->initiateSubscriptionPurchase($user, $subscription, $topupAmount);
 
-        return PurchaseOutcome::requiresPayment($subscription, $payment);
+        return PurchaseOutcome::requiresPayment($subscription, $bill);
     }
 
     public function activate(Subscription $subscription): void
@@ -78,8 +79,9 @@ class SubscriptionManager
                 ['related_subscription_id' => $subscription->id]
             );
 
+            // Продление стыкуется к концу текущего периода, а не к "сейчас".
             $start = now();
-            $previous = $user->lastActiveOrExpired();
+            $previous = method_exists($user, 'lastActiveOrExpired') ? $user->lastActiveOrExpired() : null;
             if ($previous && $previous->ends_at && $previous->ends_at->isFuture()) {
                 $start = $previous->ends_at;
             }
@@ -92,12 +94,7 @@ class SubscriptionManager
             ])->save();
         });
 
-        // Если есть revoked-ключ в grace — восстанавливаем (та же локация, без участия юзера).
-        // Если ключа нет — НЕ создаём автоматически: юзер сам выберет локацию через /keys.
-        $key = $this->findRestorableKey($subscription);
-        if ($key) {
-            RestoreVpnKeyJob::dispatch($key, $subscription);
-        }
+        SubscriptionActivated::dispatch($subscription);
     }
 
     public function autoRenewIfPossible(Subscription $expiring): ?Subscription
@@ -110,7 +107,8 @@ class SubscriptionManager
             return null;
         }
 
-        $new = Subscription::create([
+        $model = config('subscriptions.model', Subscription::class);
+        $new = $model::create([
             'user_id' => $user->id,
             'status' => Subscription::STATUS_PENDING,
             'months' => $expiring->months,
@@ -121,14 +119,5 @@ class SubscriptionManager
         $this->activate($new);
 
         return $new->fresh();
-    }
-
-    private function findRestorableKey(Subscription $subscription): ?VpnKey
-    {
-        return $subscription->user->vpnKeys()
-            ->where('status', VpnKey::STATUS_REVOKED)
-            ->where('revoked_at', '>', now()->subDays(3))
-            ->orderByDesc('revoked_at')
-            ->first();
     }
 }

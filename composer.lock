@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9b8697e77e8d4edf36ef97f6330ff533",
+    "content-hash": "7ca42ea6e73e428db7b4d9c5334ba723",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4067,6 +4067,41 @@
                 "proprietary"
             ],
             "description": "Мультипровайдерный слой платёжных шлюзов: контракт провайдера, менеджер, Cardlink, FreeKassa",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "portalconnect/subscriptions",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "packages/portalconnect/subscriptions",
+                "reference": "f9d34b1ef6c5e644b271ba6f4ee124e2e3cb52df"
+            },
+            "require": {
+                "laravel/framework": "^12.0",
+                "php": "^8.2",
+                "portalconnect/wallet": "*"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "PortalConnect\\Subscriptions\\SubscriptionsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PortalConnect\\Subscriptions\\": "src/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Подписки: тарифы из конфига, менеджер покупки/активации/автопродления, события",
             "transport-options": {
                 "symlink": true,
                 "relative": true

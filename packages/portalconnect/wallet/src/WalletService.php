@@ -22,13 +22,15 @@ class WalletService
         $this->assertCreditType($type);
 
         return DB::transaction(function () use ($wallet, $amountKopecks, $type, $context) {
-            $locked = Wallet::query()->lockForUpdate()->findOrFail($wallet->id);
+            $walletModel = config('wallet.model', Wallet::class);
+            $locked = $walletModel::query()->lockForUpdate()->findOrFail($wallet->id);
             $newBalance = $locked->balance_kopecks + $amountKopecks;
 
             $locked->balance_kopecks = $newBalance;
             $locked->save();
 
-            $tx = WalletTransaction::create([
+            $txModel = config('wallet.transaction_model', WalletTransaction::class);
+            $tx = $txModel::create([
                 'wallet_id' => $locked->id,
                 'user_id' => $locked->user_id,
                 'type' => $type,
@@ -52,7 +54,8 @@ class WalletService
         $this->assertDebitType($type);
 
         return DB::transaction(function () use ($wallet, $amountKopecks, $type, $context) {
-            $locked = Wallet::query()->lockForUpdate()->findOrFail($wallet->id);
+            $walletModel = config('wallet.model', Wallet::class);
+            $locked = $walletModel::query()->lockForUpdate()->findOrFail($wallet->id);
 
             if ($locked->balance_kopecks < $amountKopecks) {
                 throw new InsufficientFundsException(
@@ -64,7 +67,8 @@ class WalletService
             $locked->balance_kopecks = $newBalance;
             $locked->save();
 
-            $tx = WalletTransaction::create([
+            $txModel = config('wallet.transaction_model', WalletTransaction::class);
+            $tx = $txModel::create([
                 'wallet_id' => $locked->id,
                 'user_id' => $locked->user_id,
                 'type' => $type,

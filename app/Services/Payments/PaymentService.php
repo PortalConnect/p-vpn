@@ -3,7 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Payment;
-use App\Models\Subscription;
+use PortalConnect\Subscriptions\Models\Subscription;
 use App\Models\User;
 use PortalConnect\Payments\DTO\PaymentIntent;
 use PortalConnect\Payments\DTO\WebhookResult;

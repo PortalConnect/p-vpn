@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Subscription;
+use PortalConnect\Subscriptions\Models\Subscription;
 use App\Models\VpnKey;
 use App\Services\Keys\KeyProvisioningService;
 use Illuminate\Contracts\Queue\ShouldQueue;

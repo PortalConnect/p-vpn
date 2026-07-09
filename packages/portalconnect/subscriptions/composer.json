@@ -1,0 +1,20 @@
+{
+    "name": "portalconnect/subscriptions",
+    "description": "Подписки: тарифы из конфига, менеджер покупки/активации/автопродления, события",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^12.0",
+        "portalconnect/wallet": "*"
+    },
+    "autoload": {
+        "psr-4": { "PortalConnect\\Subscriptions\\": "src/" }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["PortalConnect\\Subscriptions\\SubscriptionsServiceProvider"]
+        }
+    },
+    "minimum-stability": "dev"
+}

@@ -17,7 +17,8 @@
         "laravel/tinker": "^2.10.1",
         "tightenco/ziggy": "^2.0",
         "portalconnect/payments": "*",
-        "portalconnect/wallet": "*"
+        "portalconnect/wallet": "*",
+        "portalconnect/subscriptions": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -40,7 +41,8 @@
         "psr-4": {
             "Tests\\": "tests/",
             "PortalConnect\\Payments\\Tests\\": "packages/portalconnect/payments/tests/",
-            "PortalConnect\\Wallet\\Tests\\": "packages/portalconnect/wallet/tests/"
+            "PortalConnect\\Wallet\\Tests\\": "packages/portalconnect/wallet/tests/",
+            "PortalConnect\\Subscriptions\\Tests\\": "packages/portalconnect/subscriptions/tests/"
         }
     },
     "scripts": {

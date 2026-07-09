@@ -7,7 +7,7 @@ use App\Models\Payment;
 use App\Models\ReminderLog;
 use App\Models\Subscription;
 use App\Services\Billing\TopupBillFactory;
-use App\Services\Subscriptions\SubscriptionManager;
+use PortalConnect\Subscriptions\SubscriptionManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;

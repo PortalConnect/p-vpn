@@ -11,6 +11,10 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(
+            \PortalConnect\Subscriptions\Contracts\PaymentInitiator::class,
+            \App\Services\Payments\PaymentInitiatorAdapter::class
+        );
         //
     }
 

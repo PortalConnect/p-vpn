@@ -8,9 +8,10 @@ use App\Mail\SubscriptionExpired;
 use App\Mail\TopupRequired;
 use App\Models\ReminderLog;
 use App\Models\Subscription;
+use PortalConnect\Subscriptions\Models\Subscription as BaseSubscription;
 use App\Models\VpnKey;
 use App\Services\Billing\TopupBillFactory;
-use App\Services\Subscriptions\SubscriptionManager;
+use PortalConnect\Subscriptions\SubscriptionManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -131,7 +132,7 @@ class ExpireSubscriptions extends Command
             });
     }
 
-    private function reattachKeyToNewSubscription(Subscription $expiring, Subscription $renewed): void
+    private function reattachKeyToNewSubscription(Subscription $expiring, BaseSubscription $renewed): void
     {
         VpnKey::where('subscription_id', $expiring->id)
             ->where('status', VpnKey::STATUS_ACTIVE)

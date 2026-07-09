@@ -7,7 +7,7 @@ use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\WalletTransaction;
-use App\Services\Pricing;
+use PortalConnect\Subscriptions\Pricing;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
