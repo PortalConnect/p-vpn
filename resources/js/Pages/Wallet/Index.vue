@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { useT } from '@/composables/useT'
@@ -12,12 +12,29 @@ const props = defineProps({
     min_topup_rubles: Number,
 })
 
+import { useMoney } from '@/composables/useMoney'
+const { money: fmtR, currency } = useMoney()
+
+// Пресеты и учёт — в рублях (шлюзы списывают RUB); ввод и подписи — в валюте юзера.
 const presets = [200, 600, 1000]
+const rate = computed(() => currency.value.rate || 1)
+const isRub = computed(() => currency.value.code === 'RUB')
+const toDisplay = (rubles) => (isRub.value ? rubles : Math.round((rubles / rate.value) * 100) / 100)
+const toRubles = (display) => (isRub.value ? Math.round(display) : Math.round(display * rate.value))
 
 const topupForm = useForm({ amount_rubles: presets[0] })
-const autoForm = useForm({ auto_renew: props.wallet.auto_renew })
+const customAmount = ref(toDisplay(presets[0]))
+const selectPreset = (amount) => {
+    topupForm.amount_rubles = amount
+    customAmount.value = toDisplay(amount)
+}
+watch(customAmount, (v) => { topupForm.amount_rubles = toRubles(Number(v) || 0) })
 
-const fmtR = (k) => (k / 100).toFixed(2).replace(/\.00$/, '') + ' ₽'
+const minDisplay = computed(() =>
+    isRub.value ? props.min_topup_rubles : Math.ceil((props.min_topup_rubles / rate.value) * 100) / 100
+)
+
+const autoForm = useForm({ auto_renew: props.wallet.auto_renew })
 
 const submitTopup = () => topupForm.post(route('wallet.topup'))
 const toggleAutoRenew = () => {
@@ -96,29 +113,32 @@ const txMeta = (type) => {
                             :class="topupForm.amount_rubles === amount
                                 ? 'border-blue-500 bg-blue-500/10 text-white'
                                 : 'border-slate-700 hover:border-slate-500 text-slate-200'"
-                            @click="topupForm.amount_rubles = amount"
+                            @click="selectPreset(amount)"
                         >
-                            {{ amount }} ₽
+                            {{ fmtR(amount * 100) }}
                         </button>
                     </div>
 
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">
-                            {{ t('wallet.topup_custom_label', { min: min_topup_rubles }) }}
+                            {{ t('wallet.topup_custom_label', { min: minDisplay, symbol: currency.symbol }) }}
                         </label>
                         <div class="relative">
                             <input
-                                v-model.number="topupForm.amount_rubles"
+                                v-model.number="customAmount"
                                 type="number"
-                                inputmode="numeric"
-                                :min="min_topup_rubles"
-                                step="1"
+                                inputmode="decimal"
+                                :min="minDisplay"
+                                :step="isRub ? 1 : 0.01"
                                 class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-3 pr-10 py-2.5 text-base text-white placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 focus:outline-none tabular-nums"
                             />
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">₽</span>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">{{ currency.symbol }}</span>
                         </div>
                         <p v-if="topupForm.errors.amount_rubles" class="mt-1 text-xs text-rose-400">
                             {{ topupForm.errors.amount_rubles }}
+                        </p>
+                        <p v-if="!isRub" class="mt-1 text-xs text-slate-500">
+                            {{ t('wallet.topup_rub_note', { rub: topupForm.amount_rubles + ' ₽' }) }}
                         </p>
                     </div>
 

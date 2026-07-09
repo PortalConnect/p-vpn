@@ -21,6 +21,9 @@ class Payment extends Model
 
     protected $fillable = [
         'user_id',
+        'provider',
+        'external_id',
+        'provider_operation_id',
         'cardlink_bill_id',
         'cardlink_payment_id',
         'pay_url',

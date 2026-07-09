@@ -13,10 +13,13 @@ class ClientCreated
 
     public static function fromArray(array $data): self
     {
+        // Панель отдаёт {success: true, client: {...}} — данные вложены в client.
+        $client = is_array($data['client'] ?? null) ? $data['client'] : $data;
+
         return new self(
-            id: (int) ($data['id'] ?? 0),
-            config: (string) ($data['config'] ?? ''),
-            qrCodeBase64: (string) ($data['qr_code'] ?? ''),
+            id: (int) ($client['id'] ?? 0),
+            config: (string) ($client['config'] ?? ''),
+            qrCodeBase64: (string) ($client['qr_code'] ?? ''),
         );
     }
 }

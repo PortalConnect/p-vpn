@@ -4,16 +4,51 @@ namespace App\Services\Subscriptions;
 
 use App\Jobs\RestoreVpnKeyJob;
 use App\Models\Subscription;
+use App\Models\User;
 use App\Models\VpnKey;
 use App\Models\WalletTransaction;
+use App\Services\Payments\PaymentService;
 use App\Services\Pricing;
+use App\Services\Subscriptions\DTO\PurchaseOutcome;
 use App\Services\Wallet\WalletService;
 use Illuminate\Support\Facades\DB;
 
 class SubscriptionManager
 {
-    public function __construct(private WalletService $wallet)
+    public function __construct(
+        private WalletService $wallet,
+        private PaymentService $payments,
+    ) {
+    }
+
+    /**
+     * Покупка подписки: хватает баланса — активируем сразу; не хватает —
+     * создаём pending-подписку и счёт у платёжного провайдера.
+     */
+    public function purchase(User $user, int $months): PurchaseOutcome
     {
+        $price = Pricing::priceFor($months);
+
+        $subscription = DB::transaction(fn () => Subscription::create([
+            'user_id' => $user->id,
+            'status' => Subscription::STATUS_PENDING,
+            'months' => $months,
+            'price_kopecks' => $price,
+        ]));
+
+        if ($this->wallet->sufficientForRenewal($user, $months)) {
+            $this->activate($subscription);
+            return PurchaseOutcome::activated($subscription);
+        }
+
+        $topupAmount = max(
+            $this->wallet->shortfall($user, $months),
+            (int) config('wallet.min_topup_kopecks')
+        );
+
+        $payment = $this->payments->subscriptionPurchase($user, $subscription, $topupAmount);
+
+        return PurchaseOutcome::requiresPayment($subscription, $payment);
     }
 
     public function activate(Subscription $subscription): void

@@ -28,6 +28,8 @@ class HandleInertiaRequests extends Middleware
             'locale' => $locale,
             'available_locales' => ['ru', 'en'],
             'translations' => trans('portal'),
+            // Валюта следует за локалью — фронт форматирует суммы через useMoney().
+            'currency' => app(\App\Services\Currency\CurrencyService::class)->forLocale($locale),
         ];
     }
 

@@ -10,7 +10,8 @@ defineProps({ prices: Object })
 const form = useForm({ months: 1 })
 const buy = (months) => { form.months = months; form.post(route('subscriptions.store')) }
 
-const fmtR = (k) => (k / 100).toFixed(0) + ' ₽'
+import { useMoney } from '@/composables/useMoney'
+const { money: fmtR } = useMoney()
 
 const perMonth = (months, total) => Math.round(total / months / 100) + ' ' + t('pricing.per_month')
 

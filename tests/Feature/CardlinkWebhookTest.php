@@ -50,7 +50,7 @@ class CardlinkWebhookTest extends TestCase
         $response->assertStatus(200);
         $payment->refresh();
         $this->assertSame(Payment::STATUS_SUCCESS, $payment->status);
-        $this->assertSame('pay_777', $payment->cardlink_payment_id);
+        $this->assertSame('pay_777', $payment->provider_operation_id);
         $this->assertSame(50000, $user->wallet->fresh()->balance_kopecks);
         $this->assertDatabaseHas('wallet_transactions', [
             'user_id' => $user->id,

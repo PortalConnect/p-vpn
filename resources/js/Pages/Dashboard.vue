@@ -17,7 +17,8 @@ const buyForm = useForm({ months: 1 })
 const buy = (months) => { buyForm.months = months; buyForm.post(route('subscriptions.store')) }
 
 const dateLocale = computed(() => locale.value === 'en' ? 'en-US' : 'ru-RU')
-const fmtR = (kopecks) => (kopecks / 100).toFixed(2).replace(/\.00$/, '') + ' ₽'
+import { useMoney } from '@/composables/useMoney'
+const { money: fmtR } = useMoney()
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString(dateLocale.value, { day: '2-digit', month: 'long', year: 'numeric' }) : '—'
 
 const daysLeft = computed(() => {

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
-use App\Services\Cardlink\CardlinkClient;
+use App\Services\Payments\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +12,7 @@ use Inertia\Response;
 
 class WalletController extends Controller
 {
-    public function __construct(private CardlinkClient $cardlink)
+    public function __construct(private PaymentService $payments)
     {
     }
 
@@ -47,27 +47,9 @@ class WalletController extends Controller
         $user = $request->user();
         $amountKopecks = (int) $data['amount_rubles'] * 100;
 
-        $payment = DB::transaction(function () use ($user, $amountKopecks) {
-            return Payment::create([
-                'user_id' => $user->id,
-                'amount_kopecks' => $amountKopecks,
-                'status' => Payment::STATUS_PENDING,
-                'intent' => Payment::INTENT_WALLET_TOPUP,
-            ]);
-        });
+        $payment = $this->payments->walletTopup($user, $amountKopecks);
 
-        $bill = $this->cardlink->createBill(
-            $payment->amount_kopecks,
-            (string) $payment->id,
-            "Пополнение баланса ({$user->email})"
-        );
-
-        $payment->update([
-            'cardlink_bill_id' => $bill->billId,
-            'pay_url' => $bill->payUrl,
-        ]);
-
-        return redirect()->away($bill->payUrl);
+        return redirect()->away($payment->pay_url);
     }
 
     public function toggleAutoRenew(Request $request): RedirectResponse
