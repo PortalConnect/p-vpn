@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Cardlink;
+namespace PortalConnect\Payments\Gateways\Cardlink;
 
 use Illuminate\Http\Request;
 

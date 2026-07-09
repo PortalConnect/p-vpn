@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Payments\DTO;
+namespace PortalConnect\Payments\DTO;
 
 class CreatedBill
 {

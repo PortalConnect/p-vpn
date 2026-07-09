@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Payments\Providers;
+namespace PortalConnect\Payments\Providers;
 
-use App\Models\Payment;
-use App\Services\Payments\Contracts\PaymentProvider;
-use App\Services\Payments\DTO\CreatedBill;
-use App\Services\Payments\DTO\WebhookResult;
-use App\Services\Payments\Exceptions\WebhookRejectedException;
+use PortalConnect\Payments\Contracts\PaymentProvider;
+use PortalConnect\Payments\DTO\CreatedBill;
+use PortalConnect\Payments\DTO\PaymentIntent;
+use PortalConnect\Payments\DTO\WebhookResult;
+use PortalConnect\Payments\Exceptions\WebhookRejectedException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -23,15 +23,15 @@ class FreeKassaProvider implements PaymentProvider
         return 'freekassa';
     }
 
-    public function createBill(Payment $payment, string $description): CreatedBill
+    public function createBill(PaymentIntent $intent): CreatedBill
     {
         $shopId = (string) config('freekassa.shop_id');
         $secret = (string) config('freekassa.secret1');
         $currency = (string) config('freekassa.currency', 'RUB');
 
         // Сумма в рублях с точкой — та же строка обязана попасть в подпись.
-        $amount = number_format($payment->amount_kopecks / 100, 2, '.', '');
-        $orderId = (string) $payment->id;
+        $amount = number_format($intent->amountKopecks / 100, 2, '.', '');
+        $orderId = $intent->orderId;
 
         $sign = md5("{$shopId}:{$amount}:{$secret}:{$currency}:{$orderId}");
 

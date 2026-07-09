@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Unit;
+namespace PortalConnect\Payments\Tests;
 
-use App\Services\Cardlink\WebhookVerifier;
+use PortalConnect\Payments\Gateways\Cardlink\WebhookVerifier;
 use Illuminate\Http\Request;
 use Tests\TestCase;
 

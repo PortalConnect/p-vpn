@@ -5,11 +5,11 @@ namespace App\Services\Payments;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\WalletTransaction;
-use App\Services\Payments\DTO\WebhookResult;
-use App\Services\Payments\Exceptions\WebhookRejectedException;
+use PortalConnect\Payments\DTO\WebhookResult;
+use PortalConnect\Payments\Exceptions\WebhookRejectedException;
 use App\Services\Subscriptions\SubscriptionManager;
-use App\Services\Wallet\Exceptions\InsufficientFundsException;
-use App\Services\Wallet\WalletService;
+use PortalConnect\Wallet\Exceptions\InsufficientFundsException;
+use PortalConnect\Wallet\WalletService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

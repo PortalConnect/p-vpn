@@ -6,7 +6,7 @@ return [
 
     // Реестр провайдеров: ключ → класс. Новый шлюз = новый класс + строка здесь.
     'providers' => [
-        'cardlink' => \App\Services\Payments\Providers\CardlinkProvider::class,
-        'freekassa' => \App\Services\Payments\Providers\FreeKassaProvider::class,
+        'cardlink' => \PortalConnect\Payments\Providers\CardlinkProvider::class,
+        'freekassa' => \PortalConnect\Payments\Providers\FreeKassaProvider::class,
     ],
 ];

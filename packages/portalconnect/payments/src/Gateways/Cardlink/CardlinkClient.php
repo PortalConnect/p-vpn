@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services\Cardlink;
+namespace PortalConnect\Payments\Gateways\Cardlink;
 
-use App\Services\Cardlink\DTO\BillResponse;
-use App\Services\Cardlink\DTO\PaymentStatus;
+use PortalConnect\Payments\Gateways\Cardlink\DTO\BillResponse;
+use PortalConnect\Payments\Gateways\Cardlink\DTO\PaymentStatus;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

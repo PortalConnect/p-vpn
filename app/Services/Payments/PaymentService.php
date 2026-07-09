@@ -5,7 +5,9 @@ namespace App\Services\Payments;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Services\Payments\DTO\WebhookResult;
+use PortalConnect\Payments\DTO\PaymentIntent;
+use PortalConnect\Payments\DTO\WebhookResult;
+use PortalConnect\Payments\PaymentManager;
 
 /**
  * Единая точка создания платежей: заводит Payment, выставляет счёт
@@ -81,7 +83,7 @@ class PaymentService
             'provider' => $provider->key(),
         ]);
 
-        $bill = $provider->createBill($payment, $description);
+        $bill = $provider->createBill(new PaymentIntent((string) $payment->id, $amountKopecks, $description));
 
         $payment->update([
             'external_id' => $bill->externalId,

@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use App\Services\Payments\Exceptions\WebhookRejectedException;
+use PortalConnect\Payments\Exceptions\WebhookRejectedException;
 use App\Services\Payments\PaymentFulfillmentService;
-use App\Services\Payments\PaymentManager;
+use PortalConnect\Payments\PaymentManager;
 use App\Services\Payments\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

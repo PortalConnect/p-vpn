@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Services\Payments\Providers;
+namespace PortalConnect\Payments\Providers;
 
-use App\Models\Payment;
-use App\Services\Cardlink\CardlinkClient;
-use App\Services\Cardlink\DTO\WebhookPayload;
-use App\Services\Cardlink\WebhookVerifier;
-use App\Services\Payments\Contracts\PaymentProvider;
-use App\Services\Payments\DTO\CreatedBill;
-use App\Services\Payments\DTO\WebhookResult;
-use App\Services\Payments\Exceptions\WebhookRejectedException;
+use PortalConnect\Payments\Gateways\Cardlink\CardlinkClient;
+use PortalConnect\Payments\Gateways\Cardlink\DTO\WebhookPayload;
+use PortalConnect\Payments\Gateways\Cardlink\WebhookVerifier;
+use PortalConnect\Payments\Contracts\PaymentProvider;
+use PortalConnect\Payments\DTO\CreatedBill;
+use PortalConnect\Payments\DTO\PaymentIntent;
+use PortalConnect\Payments\DTO\WebhookResult;
+use PortalConnect\Payments\Exceptions\WebhookRejectedException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -30,12 +30,12 @@ class CardlinkProvider implements PaymentProvider
         return 'cardlink';
     }
 
-    public function createBill(Payment $payment, string $description): CreatedBill
+    public function createBill(PaymentIntent $intent): CreatedBill
     {
         $bill = $this->client->createBill(
-            $payment->amount_kopecks,
-            (string) $payment->id,
-            $description
+            $intent->amountKopecks,
+            $intent->orderId,
+            $intent->description
         );
 
         return new CreatedBill($bill->billId, $bill->payUrl);

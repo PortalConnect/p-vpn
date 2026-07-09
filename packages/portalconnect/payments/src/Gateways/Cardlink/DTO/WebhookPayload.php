@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Cardlink\DTO;
+namespace PortalConnect\Payments\Gateways\Cardlink\DTO;
 
 use Illuminate\Support\Carbon;
 

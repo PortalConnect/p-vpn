@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Payments\Contracts;
+namespace PortalConnect\Payments\Contracts;
 
-use App\Models\Payment;
-use App\Services\Payments\DTO\CreatedBill;
-use App\Services\Payments\DTO\WebhookResult;
+use PortalConnect\Payments\DTO\CreatedBill;
+use PortalConnect\Payments\DTO\PaymentIntent;
+use PortalConnect\Payments\DTO\WebhookResult;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -20,12 +20,12 @@ interface PaymentProvider
     public function key(): string;
 
     /** Выставить счёт: вернуть URL оплаты и внешний id (если шлюз его выдаёт до оплаты). */
-    public function createBill(Payment $payment, string $description): CreatedBill;
+    public function createBill(PaymentIntent $intent): CreatedBill;
 
     /**
      * Проверить подпись вебхука и привести его к общему виду.
      *
-     * @throws \App\Services\Payments\Exceptions\WebhookRejectedException при невалидной подписи/запросе
+     * @throws \PortalConnect\Payments\Exceptions\WebhookRejectedException при невалидной подписи/запросе
      */
     public function parseWebhook(Request $request): WebhookResult;
 

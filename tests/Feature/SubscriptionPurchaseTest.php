@@ -8,7 +8,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use App\Services\Pricing;
-use App\Services\Wallet\WalletService;
+use PortalConnect\Wallet\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;

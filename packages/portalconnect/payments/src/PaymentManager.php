@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\Payments;
+namespace PortalConnect\Payments;
 
-use App\Services\Payments\Contracts\PaymentProvider;
+use PortalConnect\Payments\Contracts\PaymentProvider;
 use InvalidArgumentException;
 
 /**

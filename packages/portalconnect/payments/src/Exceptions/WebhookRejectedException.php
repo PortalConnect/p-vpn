@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Payments\Exceptions;
+namespace PortalConnect\Payments\Exceptions;
 
 use Exception;
 

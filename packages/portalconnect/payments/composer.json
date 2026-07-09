@@ -1,0 +1,23 @@
+{
+    "name": "portalconnect/payments",
+    "description": "Мультипровайдерный слой платёжных шлюзов: контракт провайдера, менеджер, Cardlink, FreeKassa",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PortalConnect\\Payments\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PortalConnect\\Payments\\PaymentsServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev"
+}

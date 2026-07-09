@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit;
+namespace PortalConnect\Payments\Tests;
 
-use App\Services\Cardlink\CardlinkClient;
-use App\Services\Cardlink\DTO\PaymentStatus;
+use PortalConnect\Payments\Gateways\Cardlink\CardlinkClient;
+use PortalConnect\Payments\Gateways\Cardlink\DTO\PaymentStatus;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
