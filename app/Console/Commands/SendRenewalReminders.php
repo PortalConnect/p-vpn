@@ -7,7 +7,7 @@ use App\Models\Payment;
 use App\Models\ReminderLog;
 use App\Models\Subscription;
 use App\Services\Billing\TopupBillFactory;
-use App\Services\Wallet\WalletService;
+use App\Services\Subscriptions\SubscriptionManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -24,16 +24,16 @@ class SendRenewalReminders extends Command
         1 => ReminderLog::KIND_TOPUP_NEEDED_D1,
     ];
 
-    public function handle(WalletService $wallet, TopupBillFactory $billFactory): int
+    public function handle(SubscriptionManager $subscriptions, TopupBillFactory $billFactory): int
     {
         foreach (self::WINDOWS as $daysLeft => $kind) {
-            $this->processWindow($daysLeft, $kind, $wallet, $billFactory);
+            $this->processWindow($daysLeft, $kind, $subscriptions, $billFactory);
         }
 
         return self::SUCCESS;
     }
 
-    private function processWindow(int $daysLeft, string $kind, WalletService $wallet, TopupBillFactory $billFactory): void
+    private function processWindow(int $daysLeft, string $kind, SubscriptionManager $subscriptions, TopupBillFactory $billFactory): void
     {
         $start = now()->addDays($daysLeft)->startOfDay();
         $end = now()->addDays($daysLeft)->endOfDay();
@@ -42,14 +42,14 @@ class SendRenewalReminders extends Command
             ->where('status', Subscription::STATUS_ACTIVE)
             ->whereBetween('ends_at', [$start, $end])
             ->whereDoesntHave('reminderLogs', fn ($q) => $q->where('kind', $kind))
-            ->chunkById(50, function ($subs) use ($daysLeft, $kind, $wallet, $billFactory) {
+            ->chunkById(50, function ($subs) use ($daysLeft, $kind, $subscriptions, $billFactory) {
                 foreach ($subs as $sub) {
-                    if ($wallet->sufficientForRenewal($sub->user, $sub->months)) {
+                    if ($subscriptions->sufficientFor($sub->user, $sub->months)) {
                         continue;
                     }
 
-                    $shortfall = $wallet->shortfall($sub->user, $sub->months);
-                    $minTopup = (int) config('wallet.min_topup_kopecks');
+                    $shortfall = $subscriptions->shortfall($sub->user, $sub->months);
+                    $minTopup = (int) config('wallet.min_topup_rubles') * 100;
                     $amountToBill = max($shortfall, $minTopup);
 
                     $payment = $this->upsertPendingPaymentForSubscription($sub, $amountToBill, $billFactory);

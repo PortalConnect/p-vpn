@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\WalletResource\Pages;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
-use App\Services\Wallet\WalletService;
+use PortalConnect\Wallet\WalletService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;

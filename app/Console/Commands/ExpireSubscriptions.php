@@ -11,7 +11,6 @@ use App\Models\Subscription;
 use App\Models\VpnKey;
 use App\Services\Billing\TopupBillFactory;
 use App\Services\Subscriptions\SubscriptionManager;
-use App\Services\Wallet\WalletService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -23,10 +22,9 @@ class ExpireSubscriptions extends Command
 
     public function handle(
         SubscriptionManager $subscriptions,
-        WalletService $wallet,
         TopupBillFactory $billFactory,
     ): int {
-        $this->processExpiringActive($subscriptions, $wallet, $billFactory);
+        $this->processExpiringActive($subscriptions, $billFactory);
         $this->processGraceEnded();
 
         return self::SUCCESS;
@@ -34,14 +32,13 @@ class ExpireSubscriptions extends Command
 
     private function processExpiringActive(
         SubscriptionManager $subscriptions,
-        WalletService $wallet,
         TopupBillFactory $billFactory,
     ): void {
         Subscription::query()
             ->where('status', Subscription::STATUS_ACTIVE)
             ->where('ends_at', '<', now())
             ->orderBy('ends_at')
-            ->chunkById(50, function ($expiring) use ($subscriptions, $wallet, $billFactory) {
+            ->chunkById(50, function ($expiring) use ($subscriptions, $billFactory) {
                 foreach ($expiring as $sub) {
                     $renewed = $subscriptions->autoRenewIfPossible($sub);
 
@@ -62,14 +59,14 @@ class ExpireSubscriptions extends Command
                         continue;
                     }
 
-                    $this->markExpiredAndNotifyShortfall($sub, $wallet, $billFactory);
+                    $this->markExpiredAndNotifyShortfall($sub, $subscriptions, $billFactory);
                 }
             });
     }
 
     private function markExpiredAndNotifyShortfall(
         Subscription $sub,
-        WalletService $wallet,
+        SubscriptionManager $subscriptions,
         TopupBillFactory $billFactory,
     ): void {
         $sub->update(['status' => Subscription::STATUS_EXPIRED]);
@@ -81,8 +78,8 @@ class ExpireSubscriptions extends Command
             return;
         }
 
-        $shortfall = $wallet->shortfall($sub->user, $sub->months);
-        $minTopup = (int) config('wallet.min_topup_kopecks');
+        $shortfall = $subscriptions->shortfall($sub->user, $sub->months);
+        $minTopup = (int) config('wallet.min_topup_rubles') * 100;
         $amountToBill = max($shortfall, $minTopup);
 
         $newSub = Subscription::create([

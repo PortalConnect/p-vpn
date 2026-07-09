@@ -5,6 +5,10 @@
          colors="true"
 >
     <testsuites>
+        <testsuite name="Packages">
+            <directory>packages/portalconnect/payments/tests</directory>
+            <directory>packages/portalconnect/wallet/tests</directory>
+        </testsuite>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>

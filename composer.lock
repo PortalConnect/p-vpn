@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "471a3d12d3c834ca38756473e6399605",
+    "content-hash": "9b8697e77e8d4edf36ef97f6330ff533",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4037,6 +4037,74 @@
                 }
             ],
             "time": "2025-12-27T19:41:33+00:00"
+        },
+        {
+            "name": "portalconnect/payments",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "packages/portalconnect/payments",
+                "reference": "6f8b78b5df5cd7b1d88d7eaa940bd172d54bd6e9"
+            },
+            "require": {
+                "laravel/framework": "^12.0",
+                "php": "^8.2"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "PortalConnect\\Payments\\PaymentsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PortalConnect\\Payments\\": "src/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Мультипровайдерный слой платёжных шлюзов: контракт провайдера, менеджер, Cardlink, FreeKassa",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "portalconnect/wallet",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "packages/portalconnect/wallet",
+                "reference": "84b5aae4f96329404003591496f09cea1c902434"
+            },
+            "require": {
+                "laravel/framework": "^12.0",
+                "php": "^8.2"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "PortalConnect\\Wallet\\WalletServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PortalConnect\\Wallet\\": "src/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Внутренний кошелёк: ledger-модели, сервис credit/debit с блокировками, команда пополнения",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "psr/cache",
@@ -10330,7 +10398,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,

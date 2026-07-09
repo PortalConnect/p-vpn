@@ -1,0 +1,19 @@
+{
+    "name": "portalconnect/wallet",
+    "description": "Внутренний кошелёк: ledger-модели, сервис credit/debit с блокировками, команда пополнения",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^12.0"
+    },
+    "autoload": {
+        "psr-4": { "PortalConnect\\Wallet\\": "src/" }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["PortalConnect\\Wallet\\WalletServiceProvider"]
+        }
+    },
+    "minimum-stability": "dev"
+}

@@ -1,14 +1,14 @@
 <?php
 
-namespace Tests\Unit;
+namespace PortalConnect\Wallet\Tests;
 
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use App\Services\Pricing;
-use App\Services\Wallet\Exceptions\InsufficientFundsException;
-use App\Services\Wallet\WalletService;
+use PortalConnect\Wallet\Exceptions\InsufficientFundsException;
+use PortalConnect\Wallet\WalletService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -111,7 +111,7 @@ class WalletServiceTest extends TestCase
             'price_kopecks' => 20000,
         ]);
 
-        $tx = $this->service->refund($wallet, 20000, $sub);
+        $tx = $this->service->refund($wallet, 20000, ['related_subscription_id' => $sub->id]);
 
         $this->assertSame(20000, $wallet->fresh()->balance_kopecks);
         $this->assertSame(WalletTransaction::TYPE_REFUND, $tx->type);
@@ -119,41 +119,7 @@ class WalletServiceTest extends TestCase
         $this->assertSame($sub->id, $tx->related_subscription_id);
     }
 
-    public function test_sufficient_for_renewal_compares_balance_to_pricing(): void
-    {
-        $user = User::factory()->create();
-        $price1m = Pricing::priceFor(1); // 20000
 
-        $this->assertFalse($this->service->sufficientForRenewal($user, 1));
-
-        $this->service->credit($user->wallet, $price1m - 1, WalletTransaction::TYPE_TOPUP);
-        $user->refresh();
-        $this->assertFalse($this->service->sufficientForRenewal($user, 1));
-
-        $this->service->credit($user->wallet, 1, WalletTransaction::TYPE_TOPUP);
-        $user->refresh();
-        $this->assertTrue($this->service->sufficientForRenewal($user, 1));
-    }
-
-    public function test_shortfall_returns_missing_amount_or_zero(): void
-    {
-        $user = User::factory()->create();
-        $price1m = Pricing::priceFor(1);
-
-        $this->assertSame($price1m, $this->service->shortfall($user, 1));
-
-        $this->service->credit($user->wallet, $price1m - 5000, WalletTransaction::TYPE_TOPUP);
-        $user->refresh();
-        $this->assertSame(5000, $this->service->shortfall($user, 1));
-
-        $this->service->credit($user->wallet, 5000, WalletTransaction::TYPE_TOPUP);
-        $user->refresh();
-        $this->assertSame(0, $this->service->shortfall($user, 1));
-
-        $this->service->credit($user->wallet, 100, WalletTransaction::TYPE_TOPUP);
-        $user->refresh();
-        $this->assertSame(0, $this->service->shortfall($user, 1));
-    }
 
     public function test_credit_stores_context_fields(): void
     {

@@ -10,7 +10,7 @@ use App\Models\WalletTransaction;
 use App\Services\Payments\PaymentService;
 use App\Services\Pricing;
 use App\Services\Subscriptions\DTO\PurchaseOutcome;
-use App\Services\Wallet\WalletService;
+use PortalConnect\Wallet\WalletService;
 use Illuminate\Support\Facades\DB;
 
 class SubscriptionManager
@@ -25,6 +25,21 @@ class SubscriptionManager
      * Покупка подписки: хватает баланса — активируем сразу; не хватает —
      * создаём pending-подписку и счёт у платёжного провайдера.
      */
+    /** Хватает ли на балансе на подписку на N месяцев. */
+    public function sufficientFor(User $user, int $months): bool
+    {
+        return $this->shortfall($user, $months) === 0;
+    }
+
+    /** Сколько не хватает до цены подписки (0 — хватает). */
+    public function shortfall(User $user, int $months): int
+    {
+        $price = Pricing::priceFor($months);
+        $balance = $user->wallet?->balance_kopecks ?? 0;
+
+        return max(0, $price - $balance);
+    }
+
     public function purchase(User $user, int $months): PurchaseOutcome
     {
         $price = Pricing::priceFor($months);
@@ -36,14 +51,14 @@ class SubscriptionManager
             'price_kopecks' => $price,
         ]));
 
-        if ($this->wallet->sufficientForRenewal($user, $months)) {
+        if ($this->sufficientFor($user, $months)) {
             $this->activate($subscription);
             return PurchaseOutcome::activated($subscription);
         }
 
         $topupAmount = max(
-            $this->wallet->shortfall($user, $months),
-            (int) config('wallet.min_topup_kopecks')
+            $this->shortfall($user, $months),
+            (int) config('wallet.min_topup_rubles') * 100
         );
 
         $payment = $this->payments->subscriptionPurchase($user, $subscription, $topupAmount);
@@ -91,7 +106,7 @@ class SubscriptionManager
         if (!$user->wallet->auto_renew) {
             return null;
         }
-        if (!$this->wallet->sufficientForRenewal($user, $expiring->months)) {
+        if (!$this->sufficientFor($user, $expiring->months)) {
             return null;
         }
 
