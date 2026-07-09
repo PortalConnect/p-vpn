@@ -35,6 +35,32 @@ $sub->renew();                   // продление на тот же пери
 Subscription::active()->get();   // scope
 ```
 
+## Фичи планов и usage
+
+```php
+$plan->features()->create(['slug' => 'devices', 'name' => 'Устройства', 'value' => 2]); // null = безлимит
+
+$sub->canUseFeature('devices');
+$sub->recordFeatureUsage('devices');      // false, если лимит исчерпан
+$sub->reduceFeatureUsage('devices');
+$sub->getFeatureRemainings('devices');    // null = безлимит
+$sub->getFeatureUsage('devices');
+```
+
+## Триалы, signup fee, смена плана, теги
+
+```php
+$plan = Plan::create([/* ... */ 'trial_days' => 7, 'signup_fee_kopecks' => 0]);
+$user->newSubscription($plan);            // первый раз — триал без списания
+$sub->onTrial();
+
+$manager->changePlan($sub, $newPlan);     // pro-rata возврат на кошелёк + покупка нового
+
+$user->newSubscription($plan, 'addon');   // именованные подписки (тег, default 'main')
+$user->subscription('addon');
+$user->subscribedTo('pro');               // по slug или id плана
+```
+
 ## Тарифы
 
 Источник истины — таблица `subscription_plans` (модель `Plan`: slug, months,
