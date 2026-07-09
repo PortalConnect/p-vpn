@@ -47,6 +47,7 @@ class SubscriptionManager
         $model = config('subscriptions.model', Subscription::class);
         $subscription = DB::transaction(fn () => $model::create([
             'user_id' => $user->id,
+            'plan_id' => Pricing::planFor($months)?->id,
             'status' => Subscription::STATUS_PENDING,
             'months' => $months,
             'price_kopecks' => $price,
@@ -97,6 +98,27 @@ class SubscriptionManager
         SubscriptionActivated::dispatch($subscription);
     }
 
+    /**
+     * Отмена: immediately=true — статус cancelled и доступ закрывается сейчас
+     * (ends_at обрезается); иначе подписка доработает период, автопродление
+     * по ней не сработает (статус cancelled).
+     */
+    public function cancel(Subscription $subscription, bool $immediately = false): Subscription
+    {
+        $subscription->forceFill([
+            'status' => Subscription::STATUS_CANCELLED,
+            'ends_at' => $immediately ? now() : $subscription->ends_at,
+        ])->save();
+
+        return $subscription->fresh();
+    }
+
+    /** Ручное продление: та же длительность, оплата с кошелька или счётом. */
+    public function renew(Subscription $subscription): DTO\PurchaseOutcome
+    {
+        return $this->purchase($subscription->user, $subscription->months);
+    }
+
     public function autoRenewIfPossible(Subscription $expiring): ?Subscription
     {
         $user = $expiring->user;
@@ -110,6 +132,7 @@ class SubscriptionManager
         $model = config('subscriptions.model', Subscription::class);
         $new = $model::create([
             'user_id' => $user->id,
+            'plan_id' => Pricing::planFor($expiring->months)?->id,
             'status' => Subscription::STATUS_PENDING,
             'months' => $expiring->months,
             'price_kopecks' => Pricing::priceFor($expiring->months),

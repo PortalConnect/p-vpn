@@ -11,11 +11,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use PortalConnect\Subscriptions\Concerns\HasSubscriptions;
 
 class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+    use HasSubscriptions;
 
     protected $fillable = [
         'name',
@@ -43,10 +45,6 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         return $this->hasOne(Wallet::class);
     }
 
-    public function subscriptions(): HasMany
-    {
-        return $this->hasMany(Subscription::class);
-    }
 
     public function vpnKeys(): HasMany
     {
@@ -58,21 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         return $this->hasMany(Payment::class);
     }
 
-    public function activeSubscription(): ?Subscription
-    {
-        return $this->subscriptions()
-            ->where('status', Subscription::STATUS_ACTIVE)
-            ->orderByDesc('ends_at')
-            ->first();
-    }
 
-    public function lastActiveOrExpired(): ?Subscription
-    {
-        return $this->subscriptions()
-            ->whereIn('status', [Subscription::STATUS_ACTIVE, Subscription::STATUS_EXPIRED])
-            ->orderByDesc('ends_at')
-            ->first();
-    }
 
     public function canAccessPanel(Panel $panel): bool
     {
