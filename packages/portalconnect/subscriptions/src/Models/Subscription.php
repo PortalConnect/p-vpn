@@ -19,6 +19,7 @@ class Subscription extends Model
     protected $fillable = [
         'user_id',
         'plan_id',
+        'tag',
         'status',
         'months',
         'price_kopecks',
@@ -33,6 +34,8 @@ class Subscription extends Model
         'price_kopecks' => 'integer',
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'trial_ends_at' => 'datetime',
+        'canceled_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -70,6 +73,74 @@ class Subscription extends Model
     public function pending(): bool
     {
         return $this->status === self::STATUS_PENDING;
+    }
+
+    public function onTrial(): bool
+    {
+        return $this->trial_ends_at !== null && $this->trial_ends_at->isFuture();
+    }
+
+    public function usage(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SubscriptionUsage::class, 'subscription_id');
+    }
+
+    /** Можно ли использовать фичу (есть в плане и лимит не исчерпан). */
+    public function canUseFeature(string $slug): bool
+    {
+        $feature = $this->plan?->feature($slug);
+        if (!$feature) {
+            return false;
+        }
+        if ($feature->isUnlimited()) {
+            return true;
+        }
+
+        return $this->getFeatureUsage($slug) < $feature->value;
+    }
+
+    public function getFeatureUsage(string $slug): int
+    {
+        return (int) $this->usage()->where('feature_slug', $slug)->value('used');
+    }
+
+    /** Остаток квоты; null — безлимит; 0 — исчерпано или фичи нет. */
+    public function getFeatureRemainings(string $slug): ?int
+    {
+        $feature = $this->plan?->feature($slug);
+        if (!$feature) {
+            return 0;
+        }
+        if ($feature->isUnlimited()) {
+            return null;
+        }
+
+        return max(0, $feature->value - $this->getFeatureUsage($slug));
+    }
+
+    /** Записать использование; false — лимит не позволяет. */
+    public function recordFeatureUsage(string $slug, int $quantity = 1): bool
+    {
+        $feature = $this->plan?->feature($slug);
+        if (!$feature) {
+            return false;
+        }
+        if (!$feature->isUnlimited() && $this->getFeatureUsage($slug) + $quantity > $feature->value) {
+            return false;
+        }
+
+        $usage = $this->usage()->firstOrCreate(['feature_slug' => $slug], ['used' => 0]);
+        $usage->increment('used', $quantity);
+
+        return true;
+    }
+
+    public function reduceFeatureUsage(string $slug, int $quantity = 1): void
+    {
+        $usage = $this->usage()->where('feature_slug', $slug)->first();
+        if ($usage) {
+            $usage->update(['used' => max(0, $usage->used - $quantity)]);
+        }
     }
 
     public function daysLeft(): int

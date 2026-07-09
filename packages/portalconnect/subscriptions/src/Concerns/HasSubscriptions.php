@@ -4,6 +4,7 @@ namespace PortalConnect\Subscriptions\Concerns;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use PortalConnect\Subscriptions\DTO\PurchaseOutcome;
+use PortalConnect\Subscriptions\Models\Plan;
 use PortalConnect\Subscriptions\Models\Subscription;
 use PortalConnect\Subscriptions\SubscriptionManager;
 
@@ -24,10 +25,38 @@ trait HasSubscriptions
         return $this->hasMany(config('subscriptions.model', Subscription::class));
     }
 
-    /** Купить подписку: активация с баланса или счёт на оплату. */
-    public function newSubscription(int $months): PurchaseOutcome
+    /** Купить подписку (период в месяцах или Plan): активация с баланса или счёт. */
+    public function newSubscription(int|Plan $plan, string $tag = 'main'): PurchaseOutcome
     {
-        return app(SubscriptionManager::class)->purchase($this, $months);
+        return app(SubscriptionManager::class)->purchase($this, $plan, $tag);
+    }
+
+    /** Активная подписка тега (по умолчанию main). */
+    public function subscription(string $tag = 'main'): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('tag', $tag)
+            ->where('status', Subscription::STATUS_ACTIVE)
+            ->orderByDesc('ends_at')
+            ->first();
+    }
+
+    /** Подписан ли на конкретный план (id или slug). */
+    public function subscribedTo(int|string $plan): bool
+    {
+        $planId = is_int($plan)
+            ? $plan
+            : Plan::query()->where('slug', $plan)->value('id');
+
+        if (!$planId) {
+            return false;
+        }
+
+        return $this->subscriptions()
+            ->where('plan_id', $planId)
+            ->where('status', Subscription::STATUS_ACTIVE)
+            ->where('ends_at', '>', now())
+            ->exists();
     }
 
     public function activeSubscription(): ?Subscription

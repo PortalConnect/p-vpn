@@ -19,7 +19,9 @@ class Plan extends Model
         'name',
         'months',
         'price_kopecks',
-        'features',
+        'trial_days',
+        'grace_days',
+        'signup_fee_kopecks',
         'is_active',
         'sort_order',
     ];
@@ -27,7 +29,9 @@ class Plan extends Model
     protected $casts = [
         'months' => 'integer',
         'price_kopecks' => 'integer',
-        'features' => 'array',
+        'trial_days' => 'integer',
+        'grace_days' => 'integer',
+        'signup_fee_kopecks' => 'integer',
         'is_active' => 'boolean',
         'sort_order' => 'integer',
     ];
@@ -35,6 +39,26 @@ class Plan extends Model
     public function subscriptions(): HasMany
     {
         return $this->hasMany(config('subscriptions.model', Subscription::class));
+    }
+
+    public function features(): HasMany
+    {
+        return $this->hasMany(PlanFeature::class, 'plan_id')->orderBy('sort_order');
+    }
+
+    public function feature(string $slug): ?PlanFeature
+    {
+        return $this->features->firstWhere('slug', $slug);
+    }
+
+    public function hasTrial(): bool
+    {
+        return $this->trial_days > 0;
+    }
+
+    public function hasGrace(): bool
+    {
+        return ($this->grace_days ?? 0) > 0;
     }
 
     public function isFree(): bool

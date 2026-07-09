@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use PortalConnect\Subscriptions\Contracts\PaymentInitiator;
 use PortalConnect\Subscriptions\DTO\PurchaseOutcome;
 use PortalConnect\Subscriptions\Events\SubscriptionActivated;
+use PortalConnect\Subscriptions\Models\Plan;
 use PortalConnect\Subscriptions\Models\Subscription;
 use PortalConnect\Wallet\Models\WalletTransaction;
 use PortalConnect\Wallet\WalletService;
@@ -39,19 +40,30 @@ class SubscriptionManager
 
     /**
      * Покупка: хватает баланса — активируем сразу; нет — pending-подписка + счёт.
+     * Принимает период в месяцах или конкретный Plan; у плана с trial_days
+     * первая подписка тега активируется триалом без списания.
      */
-    public function purchase(object $user, int $months): PurchaseOutcome
+    public function purchase(object $user, int|Plan $plan, string $tag = 'main'): PurchaseOutcome
     {
-        $price = Pricing::priceFor($months);
+        $planModel = $plan instanceof Plan ? $plan : Pricing::planFor($plan);
+        $months = $plan instanceof Plan ? $plan->months : $plan;
+        $price = $planModel?->price_kopecks ?? Pricing::priceFor($months);
 
         $model = config('subscriptions.model', Subscription::class);
         $subscription = DB::transaction(fn () => $model::create([
             'user_id' => $user->id,
-            'plan_id' => Pricing::planFor($months)?->id,
+            'plan_id' => $planModel?->id,
+            'tag' => $tag,
             'status' => Subscription::STATUS_PENDING,
             'months' => $months,
             'price_kopecks' => $price,
         ]));
+
+        // Триал: только первая подписка этого тега, деньги не списываются.
+        if ($planModel?->hasTrial() && !$this->hadAnySubscription($user, $tag, $subscription->id)) {
+            $this->activateTrial($subscription, $planModel);
+            return PurchaseOutcome::activated($subscription);
+        }
 
         if ($this->sufficientFor($user, $months)) {
             $this->activate($subscription);
@@ -107,16 +119,82 @@ class SubscriptionManager
     {
         $subscription->forceFill([
             'status' => Subscription::STATUS_CANCELLED,
+            'canceled_at' => now(),
             'ends_at' => $immediately ? now() : $subscription->ends_at,
         ])->save();
 
         return $subscription->fresh();
     }
 
-    /** Ручное продление: та же длительность, оплата с кошелька или счётом. */
+    /** Ручное продление: тот же план/длительность, оплата с кошелька или счётом. */
     public function renew(Subscription $subscription): DTO\PurchaseOutcome
     {
-        return $this->purchase($subscription->user, $subscription->months);
+        return $this->purchase(
+            $subscription->user,
+            $subscription->plan ?? $subscription->months,
+            $subscription->tag ?? 'main'
+        );
+    }
+
+    /**
+     * Смена плана: неиспользованный остаток текущей подписки возвращается
+     * на кошелёк pro-rata, текущая отменяется, новый план покупается
+     * (с только что зачисленного остатка + баланса, либо счётом).
+     */
+    public function changePlan(Subscription $subscription, Plan $newPlan): PurchaseOutcome
+    {
+        if ($subscription->active()) {
+            $totalDays = max(1, (int) $subscription->starts_at->diffInDays($subscription->ends_at));
+            $unusedDays = max(0, (int) now()->diffInDays($subscription->ends_at, false));
+            $refund = intdiv($subscription->price_kopecks * $unusedDays, $totalDays);
+
+            if ($refund > 0 && !$subscription->onTrial()) {
+                $this->wallet->refund($subscription->user->wallet, $refund, [
+                    'related_subscription_id' => $subscription->id,
+                    'description' => 'Возврат остатка при смене плана',
+                ]);
+            }
+        }
+
+        $this->cancel($subscription, immediately: true);
+
+        return $this->purchase($subscription->user->fresh(), $newPlan, $subscription->tag ?? 'main');
+    }
+
+    private function hadAnySubscription(object $user, string $tag, int $exceptId): bool
+    {
+        $model = config('subscriptions.model', Subscription::class);
+
+        return $model::query()
+            ->where('user_id', $user->id)
+            ->where('tag', $tag)
+            ->where('id', '!=', $exceptId)
+            ->exists();
+    }
+
+    /** Активация триала: без списания, срок = trial_days; signup fee — списывается, если задана. */
+    private function activateTrial(Subscription $subscription, Plan $plan): void
+    {
+        DB::transaction(function () use ($subscription, $plan) {
+            if ($plan->signup_fee_kopecks > 0) {
+                $this->wallet->debit(
+                    $subscription->user->wallet,
+                    $plan->signup_fee_kopecks,
+                    WalletTransaction::TYPE_SUBSCRIPTION_DEBIT,
+                    ['related_subscription_id' => $subscription->id, 'description' => 'Signup fee']
+                );
+            }
+
+            $end = now()->addDays($plan->trial_days);
+            $subscription->forceFill([
+                'status' => Subscription::STATUS_ACTIVE,
+                'starts_at' => now(),
+                'ends_at' => $end,
+                'trial_ends_at' => $end,
+            ])->save();
+        });
+
+        SubscriptionActivated::dispatch($subscription);
     }
 
     public function autoRenewIfPossible(Subscription $expiring): ?Subscription
