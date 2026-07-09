@@ -14,6 +14,8 @@ class WalletServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
         $this->publishes([
             __DIR__ . '/../config/wallet.php' => config_path('wallet.php'),
         ], 'portalconnect-wallet-config');

@@ -17,6 +17,8 @@ class PaymentsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
         $this->publishes([
             __DIR__ . '/../config/payments.php' => config_path('payments.php'),
             __DIR__ . '/../config/freekassa.php' => config_path('freekassa.php'),
