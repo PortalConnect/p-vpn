@@ -17,7 +17,7 @@ const { t } = useT();
 
         <header class="relative z-10 border-b border-slate-800/60">
             <div class="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-                <Link href="/" class="group flex items-center gap-2" aria-label="P-VPN">
+                <Link href="/" class="group flex items-center gap-2" aria-label="P-Net">
                     <AppLogo :size="36" with-wordmark wordmark-class="text-lg text-white" />
                 </Link>
                 <LocaleSwitcher />

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <body style="font-family: -apple-system, system-ui, sans-serif; color: #1f2937; line-height: 1.5;">
-<h2 style="color: #4f46e5;">Вход в P·VPN</h2>
+<h2 style="color: #4f46e5;">Вход в P·Net</h2>
 
 <p>Нажмите кнопку, чтобы войти в личный кабинет. Ссылка действует {{ \App\Models\LoginToken::TTL_MINUTES }} минут и сработает один раз.</p>
 

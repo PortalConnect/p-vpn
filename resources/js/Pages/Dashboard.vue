@@ -106,7 +106,7 @@ const daysLeft = computed(() => {
                 </Link>
             </article>
 
-            <!-- VPN key card (full width) -->
+            <!-- access key card (full width) -->
             <article class="lg:col-span-3 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-950 p-7">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>

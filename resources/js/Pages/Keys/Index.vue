@@ -134,7 +134,7 @@ const currentLocationName = computed(() =>
 
                         <div v-if="showQr" class="lg:w-72 shrink-0">
                             <div class="rounded-xl bg-white p-3 shadow-2xl shadow-blue-950/30">
-                                <img :src="qrSrc" alt="QR-код для импорта в Amnezia VPN" class="block w-full h-auto rounded" />
+                                <img :src="qrSrc" alt="QR-код ключа доступа" class="block w-full h-auto rounded" />
                             </div>
                             <p class="mt-3 text-xs text-slate-400 text-center">
                                 {{ t('keys.qr_hint') }}

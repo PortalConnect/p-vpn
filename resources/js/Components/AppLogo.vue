@@ -14,7 +14,7 @@ defineProps({
             viewBox="0 0 32 32"
             xmlns="http://www.w3.org/2000/svg"
             role="img"
-            aria-label="P-VPN"
+            aria-label="P-Net"
             class="block shrink-0"
         >
             <defs>
@@ -38,7 +38,7 @@ defineProps({
                 fill="none"
             />
 
-            <!-- network node dot — hint at VPN/peer-to-peer -->
+            <!-- network node dot -->
             <circle cx="22.5" cy="22.5" r="1.6" fill="white" />
             <circle cx="22.5" cy="22.5" r="3" fill="none" stroke="white" stroke-opacity="0.35" stroke-width="0.7" />
         </svg>
@@ -48,7 +48,7 @@ defineProps({
             class="font-display font-bold tracking-tight"
             :class="wordmarkClass"
         >
-            P<span class="text-blue-400">·</span>VPN
+            P<span class="text-blue-400">·</span>Net
         </span>
     </span>
 </template>

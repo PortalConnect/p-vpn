@@ -44,7 +44,7 @@ const proofStats = computed(() => [
         <!-- HEADER -->
         <header class="relative z-10 border-b border-slate-800/60">
             <div class="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
-                <Link href="/" class="flex items-center gap-2 group" aria-label="P-VPN">
+                <Link href="/" class="flex items-center gap-2 group" aria-label="P-Net">
                     <AppLogo :size="36" with-wordmark wordmark-class="text-lg text-white" />
                 </Link>
                 <nav class="flex items-center gap-2 sm:gap-3">
