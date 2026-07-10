@@ -20,6 +20,21 @@ Route::get('/', function () {
     ]);
 });
 
+// Публичные юридические страницы: /about, /about/privacy|terms|contacts
+Route::get('/about/{section?}', function (?string $section = 'privacy') {
+    abort_unless(in_array($section, ['privacy', 'terms', 'contacts'], true), 404);
+
+    return Inertia::render('Legal', [
+        'section' => $section,
+        'support' => [
+            'email' => config('services.support.email'),
+            'telegram' => config('services.support.telegram'),
+            'operator' => config('services.support.operator'),
+            'operator_details' => config('services.support.operator_details'),
+        ],
+    ]);
+})->name('about');
+
 Route::get('/pricing', function () {
     return Inertia::render('Pricing', [
         'prices' => Pricing::all(),

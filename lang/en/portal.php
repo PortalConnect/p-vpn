@@ -17,6 +17,7 @@ return [
         'login' => 'Sign in',
         'register' => 'Sign up',
         'cabinet' => 'Dashboard',
+        'about' => 'About',
         'menu' => 'Menu',
     ],
 
@@ -191,5 +192,12 @@ return [
         'sent_again' => 'Send again',
         'link_invalid' => 'This link is invalid or expired. Request a new one.',
         'throttled' => 'Too many requests. Try again in :seconds seconds.',
+    ],
+    'legal' => [
+        'title' => 'About the service',
+        'sub' => 'Legal information and support contacts',
+        'tab_privacy' => 'Privacy policy',
+        'tab_terms' => 'Terms of service',
+        'tab_contacts' => 'Support contacts',
     ],
 ];

@@ -31,6 +31,8 @@ const { t } = useT();
 
             <p class="mt-6 text-center text-xs text-slate-500">
                 {{ t('brand.tagline') }}
+                <span class="mx-1">·</span>
+                <Link href="/about" class="hover:text-slate-300 transition-colors">{{ t('nav.about') }}</Link>
             </p>
         </main>
     </div>

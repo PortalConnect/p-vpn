@@ -304,9 +304,10 @@ const proofStats = computed(() => [
                     <span class="hidden sm:inline">— {{ t('brand.tagline') }}</span>
                 </div>
                 <div class="flex items-center gap-5">
-                    <a href="#" class="hover:text-slate-300 transition-colors">{{ t('landing.footer_offer') }}</a>
-                    <a href="#" class="hover:text-slate-300 transition-colors">{{ t('landing.footer_policy') }}</a>
-                    <a href="#" class="hover:text-slate-300 transition-colors">{{ t('landing.footer_support') }}</a>
+                    <Link href="/about/terms" class="hover:text-slate-300 transition-colors">{{ t('landing.footer_offer') }}</Link>
+                    <Link href="/about/privacy" class="hover:text-slate-300 transition-colors">{{ t('landing.footer_policy') }}</Link>
+                    <Link href="/about/contacts" class="hover:text-slate-300 transition-colors">{{ t('landing.footer_support') }}</Link>
+                    <Link href="/about" class="hover:text-slate-300 transition-colors">{{ t('nav.about') }}</Link>
                 </div>
             </div>
         </footer>

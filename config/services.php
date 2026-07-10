@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'support' => [
+        'email' => env('SUPPORT_EMAIL', env('MAIL_FROM_ADDRESS', 'support@localhost')),
+        'telegram' => env('SUPPORT_TELEGRAM', ''),
+        // Реквизиты оператора для юр. страниц — заполнить перед подключением платёжки.
+        'operator' => env('LEGAL_OPERATOR_NAME', ''),
+        'operator_details' => env('LEGAL_OPERATOR_DETAILS', ''),
+    ],
+
 ];

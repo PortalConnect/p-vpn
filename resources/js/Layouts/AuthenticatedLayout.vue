@@ -137,6 +137,8 @@ const navItems = computed(() => [
 
         <footer class="mt-auto pt-12 pb-8">
             <div class="mx-auto max-w-6xl px-4 sm:px-6 text-center text-xs text-slate-500">
+                <Link href="/about" class="hover:text-slate-300 transition-colors underline decoration-slate-700 underline-offset-2">{{ t('nav.about') }}</Link>
+                <span class="mx-2">·</span>
                 {{ t('brand.name') }} — {{ t('brand.tagline') }}
             </div>
         </footer>
